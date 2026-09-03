@@ -1,0 +1,20 @@
+{
+  "name": "@rv/engine",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Shared deterministic review engine for the Open 2.0 candidate.",
+  "type": "module",
+  "types": "./engine.d.ts",
+  "exports": {
+    ".": {
+      "types": "./engine.d.ts",
+      "default": "./engine.js"
+    },
+    "./demo-data": "./demo-data.js",
+    "./data-quality-v2": "./data-quality-v2.js",
+    "./loopback-api": "./loopback-api.js",
+    "./net-position": "./net-position.js",
+    "./runtime-client": "./runtime-client.js"
+  }
+}

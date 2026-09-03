@@ -1,0 +1,32 @@
+* text=auto
+
+.gitattributes text eol=lf
+.gitignore text eol=lf
+LICENSE text eol=lf
+**/_headers text eol=lf
+*.css text eol=lf
+*.csv text eol=lf
+*.html text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.jsx text eol=lf
+*.md text eol=lf
+*.mjs text eol=lf
+*.sql text eol=lf
+*.toml text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Exact third-party bundles can contain upstream trailing spaces; preserve
+# their audited bytes and exempt only generated vendor copies from diff checks.
+docs/vendor/*.js -whitespace
+
+*.bat text eol=crlf
+*.gif binary
+*.jpg binary
+*.png binary
+*.woff binary
+*.woff2 binary

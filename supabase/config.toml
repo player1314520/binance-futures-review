@@ -1,0 +1,74 @@
+[api]
+# Keep newly created tables out of the Data API until a reviewed migration
+# grants the exact table, column, and function privileges it needs.
+auto_expose_new_tables = false
+
+[db]
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "https://binance-futures-review-web.vercel.app"
+additional_redirect_urls = ["https://binance-futures-review-web.vercel.app"]
+jwt_expiry = 1800
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = false
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.rate_limit]
+# Conservative launch limits. These complement, but do not replace, the
+# provider/gateway abuse controls required by the production runbook.
+email_sent = 6
+token_refresh = 60
+sign_in_sign_ups = 12
+token_verifications = 12
+
+[auth.email]
+# Production access is invite-only. The browser also sends
+# should_create_user=false for every OTP request.
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "60s"
+otp_length = 6
+otp_expiry = 600
+
+[auth.email.template.magic_link]
+subject = "复盘工作台登录验证码"
+content_path = "./supabase/templates/magic-link.html"
+
+[functions.delete-account]
+# Required for capability-based status recovery after auth.users is gone. The
+# function performs its own strict JWT validation for every destructive action;
+# only account_status is allowed without a live JWT and still needs 256-bit proof.
+verify_jwt = false
+
+[functions.publish-vault-head]
+# The gateway cannot enforce the application Origin or the signed-root chain.
+# This function therefore performs strict Origin handling, validates the user
+# JWT with /auth/v1/user, verifies Ed25519, and only then uses service_role.
+verify_jwt = false
+
+[functions.binance-beta]
+# The function validates the exact application Origin, verifies the user JWT
+# against Auth, and derives tenant ownership server-side. Internal worker calls
+# use a separate bounded principal/lease contract; the gateway alone is not the
+# authorization boundary.
+verify_jwt = false
+
+[functions.beta-operations]
+# This private function accepts GitHub OIDC job assertions and separately
+# HMAC-bound restore requests, not browser Supabase JWTs. It performs exact
+# repository/workflow/run/capability verification and database replay claims
+# before any R2, archive, backup, or restore operation.
+verify_jwt = false
+
+[functions.restore-v2]
+# Private operator/recovery control plane. It performs exact service-role or
+# verified-user checks itself. Only exact owner-recover POST/OPTIONS has narrow
+# CORS for https://binance-futures-review-web.vercel.app; every operator route
+# remains no-CORS. GitHub runners must never receive the service role.
+verify_jwt = false

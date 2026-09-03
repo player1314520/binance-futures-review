@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>复盘工作台登录验证码</title>
+  </head>
+  <body style="margin:0;background:#11100d;color:#f3efe4;font-family:Arial,sans-serif">
+    <main style="max-width:520px;margin:0 auto;padding:32px 24px">
+      <h1 style="font-size:22px;margin:0 0 16px">复盘工作台登录验证码</h1>
+      <p style="line-height:1.7">请在登录页面输入下面的 6 位验证码。验证码 10 分钟后失效，且只能使用一次。</p>
+      <p style="font-size:34px;font-weight:700;letter-spacing:8px;margin:28px 0">{{ .Token }}</p>
+      <p style="line-height:1.7;color:#bbb3a2">如果不是你发起的请求，请忽略本邮件。维护者不会向你索要验证码、恢复码、CSV 或 Binance 凭据。</p>
+    </main>
+  </body>
+</html>

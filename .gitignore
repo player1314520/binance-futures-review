@@ -1,0 +1,40 @@
+node_modules/
+dist/
+.tmp/
+supabase/.temp/
+.vercel/
+playwright-report/
+test-results/
+.env
+.env.*
+*.local
+*.tsbuildinfo
+
+# 密钥/机密:全局兜底(不绑路径),防止带密钥的 bat 拷进任何目录后被误 track
+secrets.bat
+START.bat
+RUN.bat
+*.key
+*.pem
+*.dpapi
+.credentials.dpapi.json
+*.dpapi.json*
+*.aes256gcm
+private-backups/
+legacy-cloud/
+
+# 运行时产物(引擎二进制/缓存/日志),任何位置
+node.exe
+.runtime-data/
+.cache-*.json
+.last-sync.json
+binance-fills-*.csv
+engine.log
+.node-*.part.exe
+.node-*.rejected
+.node-previous*.backup
+resident.log
+
+# 模板文件用 *.template.bat 命名,不受上面 START.bat/RUN.bat 规则影响(显式放行)
+!scripts/desktop-kit/*.template.bat
+.claude/

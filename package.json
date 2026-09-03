@@ -1,0 +1,33 @@
+{
+  "name": "review-workbench-open-candidate",
+  "version": "2.0.0-alpha",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": "^22.23.1 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --filter @rv/app build",
+    "test": "node --test tests/account-deletion-edge.test.mjs tests/beta-operations-backend.test.mjs tests/binance-beta-archive.test.mjs tests/binance-beta-handler.test.mjs tests/binance-beta-ledger.test.mjs tests/binance-beta-modules.test.mjs tests/binance-beta-runtime.test.mjs tests/binance-beta-security.test.mjs tests/binance-beta-trade-projector.test.mjs tests/binance-beta-worker.test.mjs tests/invite-beta-release-contract.test.mjs tests/legacy-review-export.test.mjs tests/net-position.test.mjs tests/production-build-secret-leak.test.mjs tests/production-control-plane.test.mjs tests/production-deployment-smoke.test.mjs tests/production-live-attestation.test.mjs tests/production-operations-evidence.test.mjs tests/production-operations-runner.test.mjs tests/production-live-contract.test.mjs tests/production-vault-live-runner.test.mjs tests/production-vault-schema.test.mjs tests/public-backend-completeness.test.mjs tests/public-candidate-b8.test.mjs tests/restore-v2-core.test.mjs tests/restore-v2-handler.test.mjs tests/restore-v2-migration-contract.test.mjs tests/runtime-license-inventory.test.mjs tests/rv2-capacity-observability.test.mjs tests/rv2-data-plane-schema.test.mjs tests/rv2-review-loop-schema.test.mjs tests/vault-publish-edge.test.mjs tests/wp13-public-staging.test.mjs && pnpm --filter @rv/app exec vitest run --config vitest.config.ts && vitest run tests/production-vault-live.spec.mjs --environment node --testTimeout=300000 --hookTimeout=300000",
+    "typecheck": "pnpm --filter @rv/app exec tsc --noEmit",
+    "test:e2e": "playwright test --config playwright.public.config.ts",
+    "test:production-operations-attestation": "node scripts/run-production-operations-attestation.mjs",
+    "test:production-vault-live": "node scripts/run-production-vault-live.mjs",
+    "verify:candidate": "node scripts/public-candidate-gates.mjs --verify-candidate",
+    "verify:compliance": "node scripts/public-candidate-gates.mjs --check-compliance",
+    "verify:history": "node scripts/public-candidate-gates.mjs --verify-history",
+    "verify:privacy": "node scripts/verify-repository-privacy.mjs",
+    "verify:deployment": "node scripts/verify-production-deployment.mjs",
+    "verify": "pnpm test && pnpm typecheck && pnpm build && pnpm test:e2e && pnpm verify:privacy && pnpm verify:candidate"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "jsdom": "28.1.0",
+    "vitest": "4.1.6"
+  }
+}

@@ -1,0 +1,14 @@
+packages:
+  - frontend
+  - app
+
+nodeLinker: hoisted
+
+allowBuilds:
+  esbuild: true
+
+# Security pins. nanoid must stay >= 3.3.18 (GHSA-2v37-7h3g-55p8).
+# Do not lower either pin without re-running `pnpm audit --audit-level high`.
+overrides:
+  nanoid: 3.3.18
+  postcss: 8.5.23

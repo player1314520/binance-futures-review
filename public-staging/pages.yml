@@ -1,0 +1,109 @@
+name: deploy-safe-landing
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10.30.3
+          run_install: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium and Linux system dependencies
+        run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm verify
+      - run: pnpm verify:history
+
+      - name: Build no-data landing
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          PRODUCTION_APP_URL: ${{ vars.PRODUCTION_APP_URL }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const releaseSha = process.env.RELEASE_SHA ?? '';
+          if (!/^[0-9a-f]{40}$/.test(releaseSha)) throw new Error('release SHA must be a full Git commit id');
+
+          const configured = (process.env.PRODUCTION_APP_URL ?? '').trim();
+          const target = configured || 'https://github.com/player1314520/binance-futures-review';
+          const url = new URL(target);
+          if (
+            url.protocol !== 'https:'
+            || url.username
+            || url.password
+            || url.search
+            || url.hash
+            || (configured && (url.hostname === 'github.io' || url.hostname.endsWith('.github.io')))
+          ) throw new Error('PRODUCTION_APP_URL must be a dedicated HTTPS origin, never shared github.io');
+          if (configured && url.pathname !== '/') throw new Error('PRODUCTION_APP_URL must be an origin without a path');
+
+          fs.mkdirSync('pages-dist', { recursive: true });
+          const source = fs.readFileSync('public-site/index.html', 'utf8');
+          const html = source
+            .replaceAll('__PRODUCTION_APP_URL__', target)
+            .replace('查看公开源码（生产站待绑定）', configured ? '打开独立生产站' : '查看公开源码（生产站待绑定）');
+          if (/__PRODUCTION_APP_URL__/.test(html)) throw new Error('landing placeholders remain');
+          fs.writeFileSync(path.join('pages-dist', 'index.html'), html);
+          fs.writeFileSync(path.join('pages-dist', '.nojekyll'), '');
+          fs.writeFileSync(path.join('pages-dist', 'release.json'), `${JSON.stringify({
+            format: 'rv-web-release/1',
+            commit: releaseSha,
+            product: 'Binance Futures Review landing',
+            mode: 'landing-only-no-data',
+            productionApp: configured || null,
+          }, null, 2)}\n`);
+          NODE
+
+      - name: Verify landing cannot handle investor data
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('pages-dist/index.html', 'utf8');
+          if (/<script\b|<input\b|<form\b|<iframe\b/i.test(html)) throw new Error('landing contains an executable/data-entry surface');
+          if (/localStorage|sessionStorage|indexedDB|fetch\s*\(|XMLHttpRequest|WebSocket/i.test(html)) {
+            throw new Error('landing contains storage or network code');
+          }
+          if (!/connect-src 'none'/.test(html)) throw new Error('landing CSP must deny connections');
+          if (!/landing-only-no-data/.test(fs.readFileSync('pages-dist/release.json', 'utf8'))) {
+            throw new Error('release marker must declare landing-only mode');
+          }
+          NODE
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: pages-dist
+      - name: Deploy safe landing to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
